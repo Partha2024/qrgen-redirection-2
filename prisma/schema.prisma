@@ -1,0 +1,48 @@
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+  
+generator client {
+  provider = "prisma-client-js"
+}
+
+model QRCode {
+  id                     Int      @id @default(autoincrement())
+  unique_id              String?  @unique 
+  qr_code_name           String
+  qr_experience          String?
+  qr_code_type           String
+  design_qr_color        String
+  design_bg_color        String
+  content_url            String?
+  content_phone_number    String?
+  content_sms_body        String?
+  qr_url                 String
+  qr_image               String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("qr_codes")
+}
+
+model QRScan {
+  id             Int      @id @default(autoincrement())
+  qr_unique_id     String?
+  qr_code_name     String?   
+  scan_date        DateTime? @db.Date
+  scan_time        DateTime? @db.Time
+  scan_country     String?  
+  scan_state       String?  
+  scan_city        String?  
+  scan_ip_address  String? @db.Inet
+  scan_os          String?  
+
+  @@map("qr_scans")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  userid     String  @unique
+  password  String
+}
