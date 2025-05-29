@@ -1,48 +1,75 @@
-datasource db {
-  provider = "postgresql"
-  url = env("DATABASE_URL")
-}
-  
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model QRCode {
-  id                     Int      @id @default(autoincrement())
-  unique_id              String?  @unique 
-  qr_code_name           String
-  qr_experience          String?
-  qr_code_type           String
-  design_qr_color        String
-  design_bg_color        String
-  content_url            String?
-  content_phone_number    String?
-  content_sms_body        String?
-  qr_url                 String
-  qr_image               String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                   Int      @id @default(autoincrement())
+  unique_id            String?  @unique
+  qr_code_name         String
+  qr_experience        String?
+  qr_code_type         String
+  design_qr_color      String
+  design_bg_color      String
+  content_url          String?
+  content_phone_number String?
+  content_sms_body     String?
+  qr_url               String
+  qr_image             String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  qr_domain            String?
+
+  scans               QRScan[]  @relation("QRCodeScans")
+  design              Design?
 
   @@map("qr_codes")
 }
 
 model QRScan {
-  id             Int      @id @default(autoincrement())
-  qr_unique_id     String?
-  qr_code_name     String?   
-  scan_date        DateTime? @db.Date
-  scan_time        DateTime? @db.Time
-  scan_country     String?  
-  scan_state       String?  
-  scan_city        String?  
-  scan_ip_address  String? @db.Inet
-  scan_os          String?  
+  id              Int       @id @default(autoincrement())
+  qr_unique_id    String?
+  qrCode          QRCode? @relation("QRCodeScans", fields: [qr_unique_id], references: [unique_id], onDelete: SetNull)
+  qr_code_name    String?
+  scan_date       DateTime? @db.Date
+  scan_time       DateTime? @db.Time(6)
+  scan_country    String?
+  scan_state      String?
+  scan_city       String?
+  scan_ip_hash    String?   @db.Inet
+  scan_os         String?
 
   @@map("qr_scans")
+  @@index([qr_unique_id])
+  @@index([scan_ip_hash])
+  @@index([scan_country])
+  @@index([scan_state])
+  @@index([scan_city])
+}
+
+model Design {
+  id                             Int     @id @default(autoincrement())
+  qr_unique_id                   String? @unique
+  qrCode                         QRCode? @relation(fields: [qr_unique_id], references: [unique_id])
+  image                          String?
+  imageOptions_imageSize         String?
+  imageOptions_margin            String?
+  dotsOptions_type               String?
+  dotsOptions_color              String?
+  backgroundOptions_color        String?
+  cornersSquareOptions_type      String?
+  cornersSquareOptions_color     String?
+  cornersDotOptions_type         String?
+  cornersDotOptions_color        String?
+  qrOptions_errorCorrectionLevel String?
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  userid     String  @unique
-  password  String
+  id       Int    @id @default(autoincrement())
+  userid   String @unique
+  password String
 }
